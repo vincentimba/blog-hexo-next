@@ -9,3 +9,4 @@ sync.ffs_db
 _config.yml
 themes\next\_config.yml
 node_modules
+.gitignore
