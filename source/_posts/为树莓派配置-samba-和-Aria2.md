@@ -70,7 +70,7 @@ Device     Boot      Start        End    Sectors   Size Id Type
 
 再次格式化两个分区，使用 ext4 格式。
 
-```
+```bash
 $ sudo mkfs.ext4 /dev/sda1
 $ sudo mkfs.ext4 /dev/sda2
 ```
@@ -79,14 +79,14 @@ $ sudo mkfs.ext4 /dev/sda2
 
 新建用来挂载硬盘的文件，我选择创建在用户主目录下。
 
-```
+```bash
 $ mkdir st_disk
 $ mkdir st_disk_2
 ```
 
 接下来将上文中创建的硬盘分区分别挂载到这两个目录上。
 
-```
+```bash
 $ sudo mount /dev/sda1 /home/pi/st_disk/
 $ sudo mount /dev/sda2 /home/pi/st_disk_2/
 ```
