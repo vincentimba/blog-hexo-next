@@ -12,6 +12,28 @@ Aria2 可以使树莓派进行 24 小时远程下载。再加上 smb (Samba) 服
 
 <!--more-->
 
+### 换源
+
+查阅过一些文章，很多都会先对原来的文件进行备份。但我觉得其实只需要把原来的部分注释掉即可，不用那么麻烦。以下是需要添加的内容。
+
+```yml /etc/apt/sources.list
+deb http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/ buster main non-free contrib
+deb-src http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/ buster main non-free contrib
+```
+
+```yml /etc/apt/sources.list.d/raspi.list
+deb http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui
+```
+
+需要注意的是在换源之后还要进行 apt-get 的更新和升级。
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get upgrade
+```
+
+在清华开源镜像站上也有针对树莓派的[帮助文档](https://mirrors.tuna.tsinghua.edu.cn/help/raspbian/)可以参考。
+
 ### 格式化硬盘
 
 为了更好的在 Linux 上使用硬盘，我们首先将其格式化为 ext4 格式。和 NTFS 一样，ext4 也是一种日志文件管理格式，这就使得其具有相对 exFAT 更高的安全性。
@@ -132,7 +154,7 @@ PARTUUID=7dxxxxxx-02  /home/pi/st_disk_2/  ext4  defaults  0  0
 
 最后更改一下两个新建文件夹的用户，使用默认的用户 `pi`。
 
-```
+```bash
 $ sudo chown pi:pi st_disk
 $ sudo chown pi:pi st_disk_2
 ```
@@ -141,7 +163,7 @@ $ sudo chown pi:pi st_disk_2
 
 安装 Aria2 并创建配置文件。
 
-```
+```bash
 $ sudo apt-get install aria2  # 最好在安装前先对树莓派进行换源并更新 apt-get
 $ sudo mkdir /etc/aria2
 $ sudo touch /etc/aria2/aria2.conf aria2.session
@@ -149,7 +171,7 @@ $ sudo touch /etc/aria2/aria2.conf aria2.session
 
 这里新建了两个文件，`aria2.session`是会话记录保存文件，用于保存信息，所以无需改动。`aria2.conf` 是具体的配置文件，打开并添加以下内容。
 
-```
+```yml
 #文件保存目录
 dir=/home/pi/st_disk/
 disk-cache=32M
@@ -256,7 +278,7 @@ $ sudo apt-get install samba-common
 
 修改 Samba 的配置文件，打开`/etc/samba/smb.conf`，找到`[printers]`这一行，在其后添加以下内容：
 
-```
+```yml
 [public]
    comment = public path
    path = /mnt/usb/
