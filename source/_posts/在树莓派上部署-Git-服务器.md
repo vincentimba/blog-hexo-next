@@ -1,6 +1,8 @@
 ---
 title: 在树莓派上部署 Git 服务器
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 树莓派
 tags:
   - Git
   - 树莓派

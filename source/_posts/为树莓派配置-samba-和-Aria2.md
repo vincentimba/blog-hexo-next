@@ -1,6 +1,8 @@
 ---
 title: 为树莓派配置 Aria2 和 Samba
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 树莓派
 tags:
   - 树莓派
   - Linux

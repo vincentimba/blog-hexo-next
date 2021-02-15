@@ -1,6 +1,8 @@
 ---
 title: 自建 Git 仓库搭建 Hexo
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 树莓派
 tags:
   - Git
   - Linux

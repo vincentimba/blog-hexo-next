@@ -1,6 +1,8 @@
 ---
 title: 一些学习笔记
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- Linux
 tags:
   - Linux
 abbrlink: e482d28e

@@ -1,6 +1,8 @@
 ---
 title: 基于 LeanCloud 的 Valine 评论服务设置
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 建站
 tags:
   - Hexo
   - Valine

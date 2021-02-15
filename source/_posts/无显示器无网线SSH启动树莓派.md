@@ -1,6 +1,8 @@
 ---
 title: 无显示器无网线 SSH 启动树莓派
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 树莓派
 tags:
   - 树莓派
 abbrlink: 69d30923

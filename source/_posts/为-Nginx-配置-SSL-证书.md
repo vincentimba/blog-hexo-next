@@ -1,6 +1,8 @@
 ---
 title: 为 Nginx 配置 SSL 证书
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- 建站
 tags:
   - Nginx
 abbrlink: 22bbd643

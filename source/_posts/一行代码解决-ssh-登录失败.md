@@ -1,6 +1,8 @@
 ---
 title: 一行命令解决 ssh 免密登录失败
-categories: IT 业余票友
+categories: 
+- IT 业余票友
+- Linux
 tags:
   - Linux
 abbrlink: c8033c23
