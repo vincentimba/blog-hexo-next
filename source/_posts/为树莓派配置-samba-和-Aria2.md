@@ -61,7 +61,7 @@ Command (m for help): n
 Partition type
    p   primary (0 primary, 0 extended, 4 free)
    e   extended (container for logical partitions)
-# 使用默认的 p ，表示新建的是一个主分区，而非扩展分区（p）
+# 使用默认的 p ，表示新建的是一个主分区，而非扩展分区（e）
 Select (default p): p
 Partition number (1-4, default 1): 1
 First sector (2048-1953525166, default 2048):
@@ -81,7 +81,7 @@ First sector (1048576001-1953525166, default 1048578048):
 Last sector, +/-sectors or +/-size{K,M,G,T,P} (1048578048-1953525166, default 1953525166):
 
 Created a new partition 2 of type 'Linux' and of size 431.5 GiB.
-# 这样两个分区就都创建好了
+# 这样两个分区就都创建好了，记得最后输入 w 保存退出
 ```
 
 再次查看一下分区的情况，可以看到两个分区都创建好了，名称分别为 `/dev/sda1 `和 `/dev/sda2`。
@@ -138,7 +138,7 @@ tmpfs          tmpfs       391976       0    391976    0% /run/user/1000
 /dev/sda2: UUID="2ac3b729-59f7-xxxxxxxxxx" TYPE="ext4" PARTUUID="7dxxxxxx-02"
 ```
 
-打开`/etc/fatab` 文件，各个设备的挂载信息都是在这里进行配置的。在其中添加两行。
+打开`/etc/fstab` 文件，各个设备的挂载信息都是在这里进行配置的。在其中添加两行。
 
 ```
 PARTUUID=7dxxxxxx-01  /home/pi/st_disk/  ext4  defaults  0  0

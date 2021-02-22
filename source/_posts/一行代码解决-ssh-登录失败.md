@@ -19,3 +19,8 @@ cat ~/.ssh/id_*.pub | ssh  user@host 'cat >> .ssh/authorized_keys'
 
 当然，也要保证除用户根目录`/home/user`、`~/.ssh`和`authorized_keys`这三个文件的权限分别为`700`、`700`和`600`。
 
+**更新**
+
+后来的使用中也发现存在自己手动复制不全的问题。与代码复制的密钥相比，手动复制会少复制整个公钥的第一个字母。这极可能就是导致免密登录失败的原因。
+
+![image-20210217185708327](https://squidzh-1304890557.cos.ap-nanjing.myqcloud.com/blog_pic_bed/20210217185712.png)
