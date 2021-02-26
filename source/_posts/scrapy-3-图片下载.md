@@ -265,6 +265,8 @@ ITEM_PIPELINES = {
 IMAGES_STORE = 'animal_imgs'
 # 定义接受图片的变量，默认为 'image_urls'
 IMAGES_URLS_FIELD = 'img_url'
+# 在输出中只显示错误相关的信息
+LOG_LEVEL = 'ERROR'
 ```
 
 ### 启动爬虫
@@ -273,8 +275,128 @@ IMAGES_URLS_FIELD = 'img_url'
 
 <img src="https://squidzh-1304890557.cos.ap-nanjing.myqcloud.com/blog_pic_bed/20210224220446.png" alt="image-20210224214357068" style="zoom:50%;" />
 
+### 一些补充
+
+在后续其他项目中，又不断发现了许多问题，尤其一些是之前撰写本文时没有考虑到的。
+
+#### cookies 的设置
+
+默认情况下，Scrapy 在 `settings.py` 文件中提供了一个全局性的 cookies 设置，如下所示。但这个选项在不同的情况下有着不同的效果，根据自己实践中的经验，这里做一个具体的记录。
+
+```python settings.py
+# Disable cookies (enabled by default)
+COOKIES_ENABLED = True
+```
+
+- 当 `COOKIES_ENABLED` 这一行被注释掉时，Scrapy 会默认其开启 ，即值为 `True` 。
+- 当 `COOKIES_ENABLED` 值为 `True` 时，Scrapy 就会启动相关的中间件，自动的进行 cookies 的获取和迭代工作，即使我们一开始并未设置请求头。如果我们手动设置了 cookies，例如 `Request(url, cookirs={'foo': 'bar'})`  ，那么 Scrapy 就会使用它，并不断地在请求过程中更新它（这里不能使用自定义 headers 的方法来定义 cookies ）。
+- 当 `COOKIES_ENABLED` 值为 `False` 时，类似 `Request(url, cookies={'foo': 'bar'})` 这样设置的 cookies 就会失效，因为 Scrapy 中用于处理 cookies 的中间件在这时不会开启。这种情况下只能通过给请求自定义 headers 的方法来自定义 cookies ，例如 `Request(url, headers=my_headers)`。
+
+
+**总而言之：**
+
+- 完全不想使用 cookies ，就将 `COOKIES_ENABLED` 值设为 `False` ；
+- 想要让 Scrapy 自动地管理 cookies ，就将其设置为 `True` ，且最好在第一次请求中手动加入初始的 cookies （这里不能使用自定义 headers 的方法来定义 cookies ）；
+- 想在每一个请求中都使用自己自定义的 cookies （或在每一次请求中使用同样的 cookies ）可以将其设置为 `False` 。
+- 对于 `settings.py` 中请求头中的 cookies 信息，有[文章](https://www.pianshen.com/article/9983265604/)表明当 `COOKIES_ENABLED` 没有注释设置为 `False` 的时候 Scrapy 便会默认使用它，这一点我没有考证。但可以确定的是，使用这个方法时不能重写爬虫文件中的 `start_requests` 方法。所以我个人还是不推荐通过 `setting.py` 文件来定义 cookies 。
+
+#### 图片管道的设置
+
+在使用图片管道时，需要先定义图片保存的根目录。
+
+```python settings.py
+IMAGES_STORE = 'IMAGES'  # 图片保存的根路径
+```
+
+在管道类的方法重写中，实测只需要继承一个类 `ImagesPipeline` 就可以正常保存图片。且不需要手动添加创建文件夹的方法，Scrapy 便会自动地在保存过程中创建文件夹。为了防止在文件保存过程中，文件名中含有非法导致保存失败，我们还可以手动添加一个替换非法字符的方法 `check_valid_title` 。下面是一个例子：
+
+```python pipelines.py
+from scrapy.pipelines.images import ImagesPipeline
+from scrapy import Request
+import re
+
+class RmImageDownload(ImagesPipeline):
+    
+    def check_valid_title(self, title):  # 这个方法用来检查文件夹的名字是否合法
+        rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
+        new_title = re.sub(rstr, "_", title)  # 将不合法字符替换为下划线
+        return new_title
+
+    def get_media_requests(self, item, info):
+        img_url = item['image_url']
+        return Request(img_url, headers=self.headers, meta={'item': item})
+
+    def file_path(self, request, response=None, info=None, *, item=None):
+        img_name = item['img_name']
+        img_tiezi_name = self.check_valid_title(item['tiezi_name'])
+        print(f'{img_name}将被保存到 - {img_tiezi_name}/')
+        return f'{img_tiezi_name}/{img_name}'
+```
+
+`get_media_requests` 和 `file_path` 这两个方法在写的过程中比较痛苦，需要仔细对比源代码，模仿来写。
+
+#### 日志信息的设置
+
+Scrapy 在项目运行的过程中会在终端输出详细的日志，下面整理一些日志的设置方法。
+
+```python settings.py
+LOG_ENABLED = True  # 启用logging，默认 True
+LOG_ENCODING = 'utf-8'  # logging 使用的编码， 默认为 utf-8
+LOG_FILE = 'log.log'  # 日志文件保存的位置和名字
+LOG_LEVEL = 'DEBUG'  # 定义显示在终端上的日志的级别，默认为 DEBUG
+"""
+Scrapy 提供 5 层 logging 级别供 LOG_LEVEL 定义使用:
+CRITICAL - 严重错误(critical)
+ERROR - 一般错误(regular errors)
+WARNING - 警告信息(warning messages)
+INFO - 一般信息(informational messages)
+DEBUG - 调试信息(debugging messages)
+"""
+```
+
+如果想要手动的在运行过程中输出一些日志，可以自行在爬虫或者管道文件中定义：
+
+```python
+import logging
+logging.info('一般信息')
+logging.warning('警告信息')
+logging.debug('调试信息')
+logging.error('错误信息')
+logging.critical('严重错误信息')
+# 使用此方法而不使用 print() 的好处在于可以将自定义的日志内容记录到日志文件中
+```
+
+#### 另一种定制配置信息的方法（覆盖 settings.py）
+
+我们可以在爬虫类或管道类内引入配置信息，这样就可以覆盖（跳过）`settings.py` 文件的设置，更加客制化的定制不同的爬虫或者管道。注意，`custom_settings` 必须是一个字典，其内部的参数也是字典。
+
+```python spider.py
+class ASpider(scrapy.Spider):
+    name = 'spider'
+    allowed_domains = ['xxx.com']
+    custom_settings = {
+        'ITEM_PIPELINES': { 
+            'autospider.pipelines.APipeline': 300,
+        },
+        'LOG_LEVEL': 'DEBUG',
+        'LOG_FILE': 'log.log'
+        'DOWNLOAD_DELAY': 0,
+    }
+```
+
 ### 相关链接
 
 本文代码：[Github/vincentimba/learnscrapy](https://github.com/vincentimba/learnscrapy)
 
-参考文章：[scrapy爬取图片并保存在不同的文件夹下](https://blog.csdn.net/qq_41963640/article/details/83904351)	[Scrapy官方文档](https://docs.scrapy.org/en/latest/intro/overview.html)
+> **参考文章：**
+>
+> [scrapy爬取图片并保存在不同的文件夹下](https://blog.csdn.net/qq_41963640/article/details/83904351)	
+>
+> [Scrapy官方文档](https://docs.scrapy.org/en/latest/intro/overview.html)
+>
+> [scrapy 中 COOKIES_ENABLED 设置](https://blog.csdn.net/u013444182/article/details/105282050/)
+>
+> [scrapy设置headers，cookies](https://www.pianshen.com/article/9983265604/)
+>
+> [爬虫scrapy框架--log日志输出配置及使用](https://blog.csdn.net/weixin_41666747/article/details/82716688)
+
