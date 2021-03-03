@@ -1,5 +1,5 @@
 ---
-title: Scrapy 的学习与实践（三）——管道的应用之抓取图片
+title: Scrapy 的学习与实践（三）——抓取图片
 categories:
   - IT 业余票友
   - Python
@@ -119,8 +119,6 @@ class AninmalSpider(scrapy.Spider):
             yield scrapy.Request(next_page_url,
                                  callback=self.parse,
                                  meta={'page_num': next_page_num})
-        else:
-            print('##############爬取完毕#############')
 ```
 
 这个方法结合了递归的思想，在函数的最后又调用了它本身，从而做到周而复始，一页一页地将整个目录全部爬取到。用来计数的参数就是前一个方法中传递来的 `meta` 字典中的 `page_num`，每爬取一个页面，便将它的值增加 1 ，确定它不大于 80 后（网站目录一共有 80 页），再将它又一次导入  `meta` 中为下一次 Request 所用，如同俄罗斯套娃一般。
@@ -363,7 +361,8 @@ logging.warning('警告信息')
 logging.debug('调试信息')
 logging.error('错误信息')
 logging.critical('严重错误信息')
-# 使用此方法而不使用 print() 的好处在于可以将自定义的日志内容记录到日志文件中
+# 使用此方法而不使用 print 的好处在于可以将自定义的日志内容记录到日志文件中
+# 在打开日志记录时，终端就不再显示相关调试信息，这时可以将 print 和 logging 一起使用。
 ```
 
 #### 另一种定制配置信息的方法（覆盖 settings.py）
