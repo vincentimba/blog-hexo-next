@@ -53,6 +53,7 @@ headers = {
 
 ```python
 import requests
+import re
 host_login_page_url = 'http://10.186.255.33/srun_portal_pc?ac_id=1&theme=basic'
 get_ip_request = requests.get(host_login_page_url, headers=default_headers)
 ip_address = re.findall('id="user_ip" value="(.*?)">', get_ip_request.text, re.S)[0]
@@ -77,6 +78,7 @@ ip_address = re.findall('id="user_ip" value="(.*?)">', get_ip_request.text, re.S
 
 ```python
 import requests
+import re
 get_challenge_url = 'http://10.186.255.33/cgi-bin/get_challenge'
 get_challenge_params = {
 	"callback": 'jQuery11277455' ,
@@ -113,7 +115,7 @@ challenge = re.search('"challenge":"(.*?)"', get_challenge_request.text).group(1
 |    ac_id     |                     重定向标识符，取 "1"                     |
 |      _       |                   时间戳，可以直接自行生成                   |
 
-观察请求发送的数据，需要我们自己手动生成的参数为 `password` ，`chksum` ，`info`，生成的方法比较繁琐，在下一章会详细介绍。传参请求的方法和上一个请求相同，不再赘述。
+观察请求发送的数据，需要我们自己手动生成的参数为 `password` ，`chksum` ，`info`，生成的方法比较繁琐，在[下一章](https://zhangbh.xyz/post/b7af6a98/#几个参数的编码和加密方法)会详细介绍。传参请求的方法和上一个请求相同，不再赘述。
 
 #### 获取登录信息
 
@@ -121,11 +123,11 @@ challenge = re.search('"challenge":"(.*?)"', get_challenge_request.text).group(1
 
 <img src="https://squidzh-1304890557.cos.ap-nanjing.myqcloud.com/blog_pic_bed/20210303222723.png" alt="image-20210303222639926" style="zoom: 33%;" />
 
-第四个请求很简单，只需要传入一个任意的 `callback` 和 `_` 参数，请求 `'http://10.186.255.33/cgi-bin/rad_user_info'` 即可。参数的含义和上面的几次请求相同。
+第四个请求很简单，`callback` 参数为任意非空的字符串， `_` 参数为一个单位为 ms 的字符串时间戳，接着请求 `'http://10.186.255.33/cgi-bin/rad_user_info'` 即可。
 
 <img src="https://squidzh-1304890557.cos.ap-nanjing.myqcloud.com/blog_pic_bed/20210304014729.png" alt="image-20210304000440365" style="zoom:50%;" />
 
-我们可以在返回的 json 数据中看到各种登录信息，可以使用正则表达式提取。具体的请求和提取方法不再赘述。
+在返回的 json 数据有各种账户信息，可以使用正则表达式提取。具体的请求和提取方法不再赘述。
 
 
 
@@ -192,13 +194,13 @@ function xEncode(str, key) {
 		[......]
 ```
 
-这里使用的 base64 编码和正常的编码方法有所不同，其使用了自定义的字母表来进行编码，自定义字母表如下方代码所示。关于字母表的含义可以参考[这篇文章](https://blog.csdn.net/xxj13706568076/article/details/105969173)，
+这里使用的 base64 编码和正常的编码方法有所不同，其使用了自定义的字母表来进行编码，自定义字母表如下方代码所示。关于字母表的含义可以参考[这篇文章](https://blog.csdn.net/xxj13706568076/article/details/105969173)。
 
-```python
+```python 深澜验证登录使用自定义字母表
 _ALPHA = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA"
 ```
 
-另外，xEncode 也是一个罕见的加密方法，但幸运地是现在已经有现成的改写好的 python 轮子，我们直接拿来使用即可。
+另外，xEncode 也是一个比较少见的加密方法，但幸运地是现在已经有现成的改写好的 python 轮子，我们直接拿来使用即可。
 
 #### chksum
 
